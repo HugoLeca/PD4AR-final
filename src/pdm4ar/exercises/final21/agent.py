@@ -37,7 +37,9 @@ class Pdm4arAgent(Agent):
         :param sim_obs:
         :return:
         """
-
+        obstacles = self.static_obstacles
+        for i in range(len(obstacles)):
+            print(obstacles[i].shape.type)
         # todo implement here
 
         return SpacecraftCommands(acc_left=1, acc_right=1)
