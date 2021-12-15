@@ -1,3 +1,19 @@
+# Docker out
+out-docker/
+out/
+cache/
+
+# Pycharm
+.idea/
+
+# Mac stuff
+.DS_Store
+
+# Website
+_site/
+Gemfile.lock
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
