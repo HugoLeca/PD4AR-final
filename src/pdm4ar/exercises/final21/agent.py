@@ -11,6 +11,7 @@ from dg_commons.sim.models.spacecraft_structures import SpacecraftGeometry
 # Imported libraries
 from scipy.stats import qmc
 import numpy as np
+import shapely 
 from shapely.geometry import Point
 from sklearn.neighbors import KDTree
 
@@ -27,82 +28,72 @@ def Halton_points_generator(Map_X, Map_Y, number_points):
     return sample_points
 
 
-def sample_points_wout_obstacle(sample_points, static_obstacles: Sequence[StaticObstacle]):
+def isInsideObsacles(sample_points, static_obstacles: Sequence[StaticObstacle]):
 
     resulting_points = sample_points
     index_drop = []
-    for i in range(0, sample_points.shape[0]):
-        p1 = Point(sample_points[i, :])
-    if p1.within(static_obstacles) == True:
-        index_drop.append(i)
+    for obs in static_obstacles:
+        for i in range(0, sample_points.shape[0]):
+            p1 = Point(sample_points[i, :])
+            if p1.within(obs) == True:
+                index_drop.append(i)
 
     resulting_points = np.delete(resulting_points, index_drop, axis=0)
 
     return resulting_points
 
-def measure_distance(point_A, point_B):
 
-    distance = np.sqrt(
-        np.square(point_A[0]-point_B[0])+np.square(point_A[1]-point_B[1]))
+def minkowski_distance(point_A, point_B, p):
 
+    distance = ((point_A[0]-point_B[0]) ^ (p) +
+                (point_A[1]-point_B[1]) ^ (p)) ^ (1/p)
     return distance
 
 
 def nearest_neighbor(sample_points):
 
-    
     tree = KDTree(sample_points)
-    nearest_dist, nearest_ind = tree.query(sample_points,k=2)
+    nearest_dist, nearest_ind = tree.query(sample_points, k=2)
 
-    return nearest_dist,nearest_ind
+    return nearest_dist, nearest_ind
 
 
 def collision_checker(Map, obstacles, sample_points):
     return None
 
 
-def Intersection(line, center, radius):
-    a = np.dot(line.dirn, line.dirn)
-    b = 2 * np.dot(line.dirn, line.p - center)
-    c = np.dot(line.p - center, line.p - center) - radius * radius
-
-    discriminant = b * b - 4 * a * c
-    if discriminant < 0:
-        return False
-
-    t1 = (-b + np.sqrt(discriminant)) / (2 * a)
-    t2 = (-b - np.sqrt(discriminant)) / (2 * a)
-
-    if (t1 < 0 and t2 < 0) or (t1 > line.dist and t2 > line.dist):
-        return False
-
-    return True
+def isIntersection(point_A, point_B,static_obstacles: Sequence[StaticObstacle]):
+    line = shapely.geometry.LineString([[point_A[0],point_A[1]],[point_B[0],point_B[1]]])
+    for obs in static_obstacles:
+        if line.intersects(obs)==True:
+            return True
+    return False
 
 
-def local_planner(Map_X,Map_Y,sample_points,static_obstacles: Sequence[StaticObstacle]):
 
-    nearest_dist,nearest_ind = nearest_neighbor(sample_points)
-    nearest_ind_init = nearest_ind[0,1]
-    visited = [0,nearest_ind_init]
-    distance_lim = 0 
+
+def local_planner(Map_X, Map_Y, sample_points, static_obstacles: Sequence[StaticObstacle]):
+
+    nearest_dist, nearest_ind = nearest_neighbor(sample_points)
+    nearest_ind_init = nearest_ind[0, 1]
+    visited = [0, nearest_ind_init]
+    distance_lim = 0
     bibli_distance = []
 
-    while(visited.shape[0]!=sample_points.shape[0]):
-        nearest_dist,nearest_ind = nearest_neighbor(sample_points)
+    while(visited.shape[0] != sample_points.shape[0]):
+        nearest_dist, nearest_ind = nearest_neighbor(sample_points)
 
-        for i in range(0,visited.shape[0]):
-            nearest_ind_init = nearest_ind[visited[i],1]
-            distance_cons = nearest_dist[visited[i],1]
+        for i in range(0, visited.shape[0]):
+            nearest_ind_init = nearest_ind[visited[i], 1]
+            distance_cons = nearest_dist[visited[i], 1]
             if distance_cons >= distance_lim:
                 distance_lim = distance_cons
-                choosen_ind = nearest_ind[visited[i],1]
+                choosen_ind = nearest_ind[visited[i], 1]
         visited.append(choosen_ind)
-        bibli_distance = [] #STOCKAGE 
+        bibli_distance = []  # STOCKAGE
 
-
-        sample_points = np.delete(sample_points,nearest_ind_init,axis=0)
+        sample_points = np.delete(sample_points, nearest_ind_init, axis=0)
         visited.append()
-
 
     return None
 
@@ -139,15 +130,13 @@ class Pdm4arAgent(Agent):
         :param sim_obs:
         :return:
         """
-        # Parameters 
+        # Parameters
         Map_X = 100
         Map_Y = 100
         number_points = 100
 
-
-        sample_points = Halton_points_generator(Map_X,Map_Y,number_points)
-        sample_points = sample_points_wout_obstacle(sample_points,self.static_obstacles)
-
-
+        sample_points = Halton_points_generator(Map_X, Map_Y, number_points)
+        sample_points = sample_points_wout_obstacle(
+            sample_points, self.static_obstacles)
 
         return SpacecraftCommands(acc_left=1, acc_right=1)
