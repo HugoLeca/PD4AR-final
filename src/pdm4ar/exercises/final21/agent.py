@@ -7,7 +7,7 @@ from dg_commons.sim.agents import Agent
 from dg_commons.sim.models.obstacles import StaticObstacle
 from dg_commons.sim.models.spacecraft import SpacecraftCommands
 from dg_commons.sim.models.spacecraft_structures import SpacecraftGeometry, SpacecraftParameters
-
+from shapely.affinity import translate
 
 class Pdm4arAgent(Agent):
     """This is the PDM4AR agent.
