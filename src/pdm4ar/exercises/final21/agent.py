@@ -6,10 +6,8 @@ from dg_commons.sim import SimObservations
 from dg_commons.sim.agents import Agent
 from dg_commons.sim.models.obstacles import StaticObstacle
 from dg_commons.sim.models.spacecraft import SpacecraftCommands
-<<<<<<< HEAD
 from dg_commons.sim.models.spacecraft_structures import SpacecraftGeometry, SpacecraftParameters
 from shapely.affinity import translate
-=======
 from dg_commons.sim.models.spacecraft_structures import SpacecraftGeometry
 
 # Imported libraries
@@ -110,8 +108,6 @@ def local_planner(Map_X, Map_Y, sample_points, static_obstacles: Sequence[Static
 
 def shortest_path(AdjencyMap):
     return None
-
->>>>>>> ce77930737efa300564ce2b6e495f72cb02fdbea
 
 class Pdm4arAgent(Agent):
     """This is the PDM4AR agent.

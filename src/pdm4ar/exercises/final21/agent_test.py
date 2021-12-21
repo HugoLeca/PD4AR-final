@@ -12,13 +12,11 @@ from typing import Optional
 from dg_commons.sim.simulator import SimContext, Simulator
 from dg_commons.sim.simulator_animation import create_animation
 
-
 from dg_commons import PlayerName, DgSampledSequence
 from dg_commons.maps.shapes_generator import create_random_starshaped_polygon
 from dg_commons.planning import PlanningGoal
 from dg_commons.sim import SimParameters
 from dg_commons.sim.agents import NPAgent
-
 
 from dg_commons.sim.models.obstacles import ObstacleGeometry, DynObstacleParameters
 from dg_commons.sim.models.obstacles_dyn import DynObstacleModel, DynObstacleState, DynObstacleCommands
@@ -30,7 +28,7 @@ from shapely.geometry import Polygon, MultiPoint, Point
 
 from scipy.stats import qmc
 
-#imports for Halton points generation
+# imports for Halton points generation
 from typing import Optional, Dict
 from dg_commons.sim.models.obstacles import StaticObstacle
 # points = MultiPoint([(0.0, 0.0), (1.0, 1.0)])
@@ -38,9 +36,9 @@ from dg_commons.sim.models.obstacles import StaticObstacle
 import math
 import random
 
-
 # indicate path to final21 folder
 import sys
+
 # insert at 1, 0 is the script path (or '' in REPL)
 sys.path.insert(1, '/Users/guillaumelecronier/Sanbox/src/pdm4ar/exercises_def/final21')
 
@@ -51,6 +49,7 @@ PDM4AR = PlayerName("PDM4AR")
 ########location of the file containing the basic scenario
 from scenario import get_dgscenario
 from scenario_test import get_dgscenario_test
+
 
 def _get_sim_context_static(scenario: DgScenario, goal: PlanningGoal, x0: SpacecraftState) -> SimContext:
     model = SpacecraftModel.default(x0)
@@ -73,27 +72,26 @@ def _get_sim_context_static(scenario: DgScenario, goal: PlanningGoal, x0: Spacec
     )
 
 
-def get_sim_context_static(seed: Optional[int] = None, mode: int = 0) -> SimContext: 
-    #mode 0 --> original task scenario ; mode 1 --> custom scenario.Defaut = 0
+def get_sim_context_static(seed: Optional[int] = None, mode: int = 0) -> SimContext:
+    # mode 0 --> original task scenario ; mode 1 --> custom scenario.Defaut = 0
     if mode == 0:
         dgscenario, goal, x0 = get_dgscenario(seed)
     if mode == 1:
         dgscenario, goal, x0 = get_dgscenario_test(seed)
 
-    
     simcontext = _get_sim_context_static(dgscenario, goal, x0)
     simcontext.description = "static-environment"
     return simcontext
 
 
-
-#code for creating a gif animation !!specify the animation path destination!!
+# code for creating a gif animation !!specify the animation path destination!!
 def anim(sim_context: SimContext):
     fn = "/Users/guillaumelecronier/Sanbox/src/pdm4ar/exercises/final21/out_pictures/animation_demo.gif"
     create_animation(file_path=fn, sim_context=sim_context, figsize=(16, 16), dt=50, dpi=120, plot_limits=None)
     return None
 
-#Halton point generation
+
+# Halton point generation
 
 def Halton_points_generator(Map_X, Map_Y, number_points):
     sample_points = np.zeros((number_points, 2))
@@ -106,13 +104,14 @@ def Halton_points_generator(Map_X, Map_Y, number_points):
 
     return sample_points
 
+
 def sample_points_wout_obstacle(sample_points, static_obstacles: Dict[int, StaticObstacle]):
     resulting_points = sample_points
     index_drop = []
     for i in range(0, sample_points.shape[0]):
         p1 = Point(sample_points[i, :])
         for obstacle in static_obstacles.values():
-            if p1.within(obstacle.shape):  
+            if p1.within(obstacle.shape):
                 index_drop.append(i)
                 print(f"point {p1} is in obstacle. Dropping point")
 
@@ -128,7 +127,6 @@ Path planning Sample Code with Randomized Rapidly-Exploring Random Trees (RRT)
 author: AtsushiSakai(@Atsushi_twi)
 
 """
-
 
 show_animation = True
 
@@ -157,7 +155,6 @@ class RRT:
             self.xmax = float(area[1])
             self.ymin = float(area[2])
             self.ymax = float(area[3])
-
 
     def __init__(self,
                  start,
@@ -211,7 +208,7 @@ class RRT:
             new_node = self.steer(nearest_node, rnd_node, self.expand_dis)
 
             if self.check_if_outside_play_area(new_node, self.play_area) and \
-               self.check_collision(new_node, self.obstacle_list):
+                    self.check_collision(new_node, self.obstacle_list):
                 self.node_list.append(new_node)
 
             '''if animation and i % 5 == 0:
@@ -324,7 +321,7 @@ class RRT:
 
     @staticmethod
     def get_nearest_node_index(node_list, rnd_node):
-        dlist = [(node.x - rnd_node.x)**2 + (node.y - rnd_node.y)**2
+        dlist = [(node.x - rnd_node.x) ** 2 + (node.y - rnd_node.y) ** 2
                  for node in node_list]
         minind = dlist.index(min(dlist))
 
@@ -337,7 +334,7 @@ class RRT:
             return True  # no play_area was defined, every pos should be ok
 
         if node.x < play_area.xmin or node.x > play_area.xmax or \
-           node.y < play_area.ymin or node.y > play_area.ymax:
+                node.y < play_area.ymin or node.y > play_area.ymax:
             return False  # outside - bad
         else:
             return True  # inside - ok
@@ -377,24 +374,22 @@ if __name__ == '__main__':
         shapely_viz.add_shape(s_obstacle.shape, color=s_obstacle.geometry.color, zorder=ZOrders.ENV_OBSTACLE)
     shapely_viz.add_shape(goal.get_plottable_geometry(), color="orange", zorder=ZOrders.GOAL, alpha=0.5)
 
-    
-
-    #Halton point genereation
+    # Halton point genereation
     max_size = 100
     Npoints = 300
     Halton_Points = Halton_points_generator(max_size, max_size, Npoints)
 
-    #check if point is inside polygon. Dropping the point if inside
+    # check if point is inside polygon. Dropping the point if inside
     pts = sample_points_wout_obstacle(Halton_Points, dg_scenario.static_obstacles)
     print(f"initial size : {Halton_Points.shape}, resulting_size : {pts.shape}")
-    #Points = np.array([(0.0, 1.0) for idx in range(8)])
+    # Points = np.array([(0.0, 1.0) for idx in range(8)])
     # print(Points)
 
-    #print(MultiPoint(Points))  #Multipoint constructor takes a 1-D array of tuples
+    # print(MultiPoint(Points))  #Multipoint constructor takes a 1-D array of tuples
     # pts_wout_obs = sample_points_wout_obstacle(Points, dg_scenario.static_obstacles) #dg_scenario.static_obstacles is a Dict[int, StaticObstacle]
     # shapely_viz.add_shape()
 
-    #shapely_viz.add_shape(Points, color = "orange")
+    # shapely_viz.add_shape(Points, color = "orange")
     '''for point in Halton_Points:
         print(point)
         shapely_viz.add_shape(Point(point), radius = 0.2, color = 'white')'''
@@ -432,15 +427,12 @@ if __name__ == '__main__':
             for (x, y) in path:
                 shapely_viz.add_shape(Point((x, y)), radius=0.2, color='white')
 
-
-
-
     ax = shapely_viz.ax
     ax.autoscale()
     ax.set_facecolor('k')
     ax.set_aspect("equal")
 
-    #getting the simulaton's context
+    # getting the simulaton's context
     # seed = 0
     # sim_context = get_sim_context_static(seed, mode = 1)
 
@@ -448,6 +440,6 @@ if __name__ == '__main__':
     # sim = Simulator()
     # sim.run(sim_context)
 
-    #plotting the logs into a .gif animation
+    # plotting the logs into a .gif animation
     # anim(sim_context)
     plt.show()
