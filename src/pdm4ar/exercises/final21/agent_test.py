@@ -41,7 +41,7 @@ import random
 import sys
 
 # insert at 1, 0 is the script path (or '' in REPL)
-sys.path.insert(1, '/Users/guillaumelecronier/Sanbox/src/pdm4ar/exercises_def/final21')
+sys.path.insert(1, 'C:/Users/hugol/OneDrive/Documents/ETHZ/PD4AR/PD4AR-final/src/pdm4ar/exercises_def/final21')
 
 from agent import Pdm4arAgent
 
@@ -87,7 +87,7 @@ def get_sim_context_static(seed: Optional[int] = None, mode: int = 0) -> SimCont
 
 # code for creating a gif animation !!specify the animation path destination!!
 def anim(sim_context: SimContext):
-    fn = "/Users/guillaumelecronier/Sanbox/src/pdm4ar/exercises/final21/out_pictures/animation_demo.gif"
+    fn = "C:/Users/hugol/OneDrive/Documents/ETHZ/PD4AR/PD4AR-final/src/pdm4ar/exercises/final21/out_pictures/anim.gif"
     create_animation(file_path=fn, sim_context=sim_context, figsize=(16, 16), dt=50, dpi=120, plot_limits=None)
     return None
 
@@ -166,7 +166,7 @@ class RRT:
                  expand_dis=30,
                  path_resolution=1,
                  goal_sample_rate=20,
-                 max_iter=1000,
+                 max_iter=500,
                  connect_circle_dist = 50.0,
                  search_until_max_iter=True
 
@@ -575,13 +575,13 @@ if __name__ == '__main__':
     ax.set_aspect("equal")
 
     # getting the simulaton's context
-    # seed = 0
-    # sim_context = get_sim_context_static(seed, mode = 1)
+    seed = 0
+    sim_context = get_sim_context_static(seed, mode = 1)
 
     # #running the siulation and saving the logs
-    # sim = Simulator()
-    # sim.run(sim_context)
+    sim = Simulator()
+    sim.run(sim_context)
 
-    # plotting the logs into a .gif animation
-    # anim(sim_context)
+    #plotting the logs into a .gif animation
+    anim(sim_context)
     plt.show()
