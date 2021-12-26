@@ -36,6 +36,8 @@ from dg_commons.sim.models.obstacles import StaticObstacle
 
 import math
 import random
+from sklearn.neighbors import KDTree
+from dg_commons.maps.shapely_viz import ShapelyViz
 
 # indicate path to final21 folder
 import sys
@@ -429,44 +431,6 @@ class RRT:
             rnd = self.Node(self.end.x, self.end.y)
         return rnd
 
-    '''def draw_graph(self, rnd=None):
-        plt.clf()
-        # for stopping simulation with the esc key.
-        plt.gcf().canvas.mpl_connect(
-            'key_release_event',
-            lambda event: [exit(0) if event.key == 'escape' else None])
-        if rnd is not None:
-            plt.plot(rnd.x, rnd.y, "^k")
-        for node in self.node_list:
-            if node.parent:
-                plt.plot(node.path_x, node.path_y, "-g")
-
-        for (ox, oy, size) in self.obstacle_list:
-            self.plot_circle(ox, oy, size)
-
-        if self.play_area is not None:
-            plt.plot([self.play_area.xmin, self.play_area.xmax,
-                      self.play_area.xmax, self.play_area.xmin,
-                      self.play_area.xmin],
-                     [self.play_area.ymin, self.play_area.ymin,
-                      self.play_area.ymax, self.play_area.ymax,
-                      self.play_area.ymin],
-                     "-k")
-
-        plt.plot(self.start.x, self.start.y, "xr")
-        plt.plot(self.end.x, self.end.y, "xr")
-        plt.axis("equal")
-        plt.axis([-2, 15, -2, 15])
-        plt.grid(True)
-        plt.pause(0.01)
-'''
-    '''@staticmethod'''
-    '''def plot_circle(x, y, size, color="-b"):  # pragma: no cover
-        deg = list(range(0, 360, 5))
-        deg.append(0)
-        xl = [x + size * math.cos(np.deg2rad(d)) for d in deg]
-        yl = [y + size * math.sin(np.deg2rad(d)) for d in deg]
-        plt.plot(xl, yl, color)'''
 
     @staticmethod
     def get_nearest_node_index(node_list, rnd_node):
@@ -476,17 +440,6 @@ class RRT:
 
         return minind
 
-    @staticmethod
-    def check_if_outside_play_area(node, play_area):
-
-        if play_area is None:
-            return True  # no play_area was defined, every pos should be ok
-
-        if node.x < play_area.xmin or node.x > play_area.xmax or \
-                node.y < play_area.ymin or node.y > play_area.ymax:
-            return False  # outside - bad
-        else:
-            return True  # inside - ok
 
     @staticmethod
     def check_collision(node, static_obstacles):
@@ -543,10 +496,7 @@ if __name__ == '__main__':
         goal=[xg, yg],
         rand_area=[0, 100],
         obstacle_list=obstacleList,
-        expand_dis=20
-
-        # play_area=[0, 10, 0, 14]
-    )
+        expand_dis=15)
     path = rrt_star.planning(animation=show_animation)
     if path is None:
         print("Cannot find path")
@@ -564,24 +514,25 @@ if __name__ == '__main__':
                 shapely_viz.add_shape(s_obstacle.shape, color=s_obstacle.geometry.color, zorder=ZOrders.ENV_OBSTACLE)
             shapely_viz.add_shape(goal.get_plottable_geometry(), color="orange", zorder=ZOrders.GOAL, alpha=0.5)
             # rrt.draw_graph()
-            '''for (x,y) in path:
-                shapely_viz.add_shape(Point(x, y), radius=0.2, color='white')'''
-            shapely_viz.add_shape(LineString(list(path)), color='white')
+            for (x,y) in path:
+                shapely_viz.add_shape(Point(x, y), radius=0.2, color='white')
+            #shapely_viz.add_shape(LineString(list(path)), color='white')
 
-
+    print('Le point 1 du chemin est')
+    print(path[-2])
     ax = shapely_viz.ax
     ax.autoscale()
     ax.set_facecolor('k')
     ax.set_aspect("equal")
 
     # getting the simulaton's context
-    # seed = 0
-    # sim_context = get_sim_context_static(seed, mode = 1)
+    #seed = 0
+    #sim_context = get_sim_context_static(seed, mode = 1)
 
-    # #running the siulation and saving the logs
-    # sim = Simulator()
-    # sim.run(sim_context)
+    #running the siulation and saving the logs
+    #sim = Simulator()
+    #sim.run(sim_context)
 
     # plotting the logs into a .gif animation
-    # anim(sim_context)
+    #anim(sim_context)
     plt.show()
